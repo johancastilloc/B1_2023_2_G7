@@ -26,6 +26,7 @@ from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from gnuradio import analog
+from gnuradio import blocks
 from gnuradio import gr
 from gnuradio.fft import window
 import sys
@@ -171,14 +172,16 @@ class pruebarepo(gr.top_block, Qt.QWidget):
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_freq_sink_x_0_win)
-        self.analog_sig_source_x_0 = analog.sig_source_f(samp_rate, analog.GR_COS_WAVE, 1000, 1, 0, 0)
+        self.blocks_add_const_vxx_0 = blocks.add_const_ff(5)
+        self.analog_sig_source_x_0 = analog.sig_source_f(samp_rate, analog.GR_SQR_WAVE, 1000, 1, 0, 0)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_sig_source_x_0, 0), (self.qtgui_freq_sink_x_0, 0))
-        self.connect((self.analog_sig_source_x_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.analog_sig_source_x_0, 0), (self.blocks_add_const_vxx_0, 0))
+        self.connect((self.blocks_add_const_vxx_0, 0), (self.qtgui_freq_sink_x_0, 0))
+        self.connect((self.blocks_add_const_vxx_0, 0), (self.qtgui_time_sink_x_0, 0))
 
 
     def closeEvent(self, event):
