@@ -29,7 +29,7 @@ class blk (gr. sync_block ):
 		# Calculo de la media cuadratica
 		x2=np. multiply (x,x)
 		acumulado1 = self . acum_anterior1 + np. cumsum (x2)
-		self . acum_anterior1 = acumulado [N -1]
+		self . acum_anterior1 = acumulado1 [N -1]
 		y1 [:] = acumulado1 / self . Ntotales
 		# Calculo de la RMS
 		y2 [:] = np. sqrt (y1)
