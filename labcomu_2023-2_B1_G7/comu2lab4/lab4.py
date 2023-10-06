@@ -24,6 +24,7 @@ from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
+from gnuradio import analog
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
@@ -76,7 +77,7 @@ class lab4(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.tabla_verdad_constelacion = tabla_verdad_constelacion = (-0.707 -0.707j,-1+ 0j,0 + 1j,- 0.707 + 0.707j, 0-1j, 0.707 -0.707j, 0.707+0.707j,1-0j)
+        self.tabla_verdad_constelacion = tabla_verdad_constelacion = (-0.707 -0.707j,- 0.707 + 0.707j, 0.707 -0.707j, 0.707+0.707j)
         self.M = M = len(tabla_verdad_constelacion)
         self.bps = bps = int(math.log(M,2))
         self.Sps = Sps = 8
@@ -226,17 +227,21 @@ class lab4(gr.top_block, Qt.QWidget):
         self.interp_fir_filter_xxx_0 = filter.interp_fir_filter_ccc(Sps, h)
         self.interp_fir_filter_xxx_0.declare_sample_delay(0)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(tabla_verdad_constelacion, 1)
-        self.blocks_vector_source_x_0 = blocks.vector_source_b((0,1,2,3,4,5,6,7), True, 1, [])
+        self.blocks_vector_source_x_0 = blocks.vector_source_b((0,1,2,3), True, 1, [])
+        self.blocks_add_xx_0 = blocks.add_vcc(1)
+        self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, 0.2, 0)
 
 
         ##################################################
         # Connections
         ##################################################
+        self.connect((self.analog_noise_source_x_0, 0), (self.blocks_add_xx_0, 0))
+        self.connect((self.blocks_add_xx_0, 0), (self.qtgui_const_sink_x_0, 0))
+        self.connect((self.blocks_add_xx_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.interp_fir_filter_xxx_0, 0))
-        self.connect((self.interp_fir_filter_xxx_0, 0), (self.qtgui_const_sink_x_0, 0))
+        self.connect((self.interp_fir_filter_xxx_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.interp_fir_filter_xxx_0, 0), (self.qtgui_freq_sink_x_0, 0))
-        self.connect((self.interp_fir_filter_xxx_0, 0), (self.qtgui_time_sink_x_0, 0))
 
 
     def closeEvent(self, event):

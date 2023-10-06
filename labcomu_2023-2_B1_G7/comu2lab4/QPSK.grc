@@ -121,7 +121,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: (-0.707 -0.707j,-1+ 0j,0 + 1j,- 0.707 + 0.707j, 0-1j, 0.707 -0.707j, 0.707+0.707j,1-0j)
+    value: (-0.707 -0.707j,- 0.707 + 0.707j, 0.707 -0.707j, 0.707+0.707j)
   states:
     bus_sink: false
     bus_source: false
@@ -232,7 +232,7 @@ blocks:
     repeat: 'True'
     tags: '[]'
     type: byte
-    vector: (0,1,2,3,4,5,6,7)
+    vector: (0,1,2,3)
     vlen: '1'
   states:
     bus_sink: false
