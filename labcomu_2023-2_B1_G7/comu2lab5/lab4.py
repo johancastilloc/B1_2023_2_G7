@@ -20,15 +20,10 @@ if __name__ == '__main__':
         except:
             print("Warning: failed to XInitThreads()")
 
-import os
-import sys
-sys.path.append(os.environ.get('GRC_HIER_PATH', os.path.expanduser('~/.grc_gnuradio')))
-
 from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
-from b_demod_constelacion_cb import b_demod_constelacion_cb  # grc-generated hier_block
 from gnuradio import analog
 from gnuradio import audio
 from gnuradio import blocks
@@ -36,6 +31,7 @@ from gnuradio import digital
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio.fft import window
+import sys
 import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
@@ -92,6 +88,8 @@ class lab4(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate = Rs*Sps
         self.ruido = ruido = 0
         self.h = h = [ 1]*Sps
+        self.co = co = digital.constellation_rect(tabla_verdad_constelacion, [0, 1, 2, 3, 4, 5, 6, 7],
+        8, 4, 4, 1, 1).base()
         self.Rb = Rb = Rs*bps
 
         ##################################################
@@ -106,6 +104,57 @@ class lab4(gr.top_block, Qt.QWidget):
                 decimation=44100,
                 taps=[],
                 fractional_bw=0)
+        self.qtgui_time_sink_x_1_0_0 = qtgui.time_sink_c(
+            1024, #size
+            samp_rate, #samp_rate
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_1_0_0.set_update_time(0.10)
+        self.qtgui_time_sink_x_1_0_0.set_y_axis(-1, 1)
+
+        self.qtgui_time_sink_x_1_0_0.set_y_label('Prueba', "")
+
+        self.qtgui_time_sink_x_1_0_0.enable_tags(True)
+        self.qtgui_time_sink_x_1_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_1_0_0.enable_autoscale(False)
+        self.qtgui_time_sink_x_1_0_0.enable_grid(False)
+        self.qtgui_time_sink_x_1_0_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_1_0_0.enable_control_panel(False)
+        self.qtgui_time_sink_x_1_0_0.enable_stem_plot(False)
+
+
+        labels = ['Decod', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                if (i % 2 == 0):
+                    self.qtgui_time_sink_x_1_0_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                else:
+                    self.qtgui_time_sink_x_1_0_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+            else:
+                self.qtgui_time_sink_x_1_0_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_1_0_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_1_0_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_1_0_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_1_0_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_1_0_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_1_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_1_0_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_1_0_0_win)
         self.qtgui_time_sink_x_1_0 = qtgui.time_sink_f(
             1024, #size
             samp_rate, #samp_rate
@@ -247,15 +296,14 @@ class lab4(gr.top_block, Qt.QWidget):
         self.interp_fir_filter_xxx_0.declare_sample_delay(0)
         self.fir_filter_xxx_0 = filter.fir_filter_ccc(8, h)
         self.fir_filter_xxx_0.declare_sample_delay(0)
+        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(co)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(tabla_verdad_constelacion, 1)
-        self.blocks_wavfile_source_0 = blocks.wavfile_source('/home/labcom/Documentos/comu2lab4/cancion.wav', True)
-        self.blocks_unpacked_to_packed_xx_0 = blocks.unpacked_to_packed_bb(8, gr.GR_MSB_FIRST)
+        self.blocks_wavfile_source_0 = blocks.wavfile_source('/home/labcom/Documentos/comu2lab5/cancion.wav', True)
+        self.blocks_unpacked_to_packed_xx_0 = blocks.unpacked_to_packed_bb(3, gr.GR_MSB_FIRST)
+        self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(3, gr.GR_MSB_FIRST)
         self.blocks_float_to_char_0 = blocks.float_to_char(1, 3)
         self.blocks_char_to_float_0 = blocks.char_to_float(1, 3)
         self.blocks_add_xx_0 = blocks.add_vcc(1)
-        self.b_demod_constelacion_cb_0 = b_demod_constelacion_cb(
-            Constelacion=tabla_verdad_constelacion,
-        )
         self.audio_sink_0 = audio.sink(samp_rate, '', True)
         self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, ruido, 0)
 
@@ -264,17 +312,19 @@ class lab4(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.analog_noise_source_x_0, 0), (self.blocks_add_xx_0, 0))
-        self.connect((self.b_demod_constelacion_cb_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.fir_filter_xxx_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0, 0), (self.audio_sink_0, 0))
         self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_time_sink_x_1, 0))
-        self.connect((self.blocks_float_to_char_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
+        self.connect((self.blocks_float_to_char_0, 0), (self.blocks_packed_to_unpacked_xx_0, 0))
+        self.connect((self.blocks_packed_to_unpacked_xx_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.blocks_unpacked_to_packed_xx_0, 0), (self.blocks_char_to_float_0, 0))
         self.connect((self.blocks_wavfile_source_0, 0), (self.rational_resampler_xxx_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.interp_fir_filter_xxx_0, 0))
-        self.connect((self.fir_filter_xxx_0, 0), (self.b_demod_constelacion_cb_0, 0))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))
+        self.connect((self.fir_filter_xxx_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.interp_fir_filter_xxx_0, 0), (self.blocks_add_xx_0, 1))
+        self.connect((self.interp_fir_filter_xxx_0, 0), (self.qtgui_time_sink_x_1_0_0, 0))
         self.connect((self.rational_resampler_xxx_0, 0), (self.blocks_float_to_char_0, 0))
         self.connect((self.rational_resampler_xxx_0, 0), (self.qtgui_time_sink_x_1_0, 0))
 
@@ -293,7 +343,6 @@ class lab4(gr.top_block, Qt.QWidget):
     def set_tabla_verdad_constelacion(self, tabla_verdad_constelacion):
         self.tabla_verdad_constelacion = tabla_verdad_constelacion
         self.set_M(len(self.tabla_verdad_constelacion))
-        self.b_demod_constelacion_cb_0.set_Constelacion(self.tabla_verdad_constelacion)
         self.digital_chunks_to_symbols_xx_0.set_symbol_table(self.tabla_verdad_constelacion)
 
     def get_M(self):
@@ -333,6 +382,7 @@ class lab4(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.qtgui_time_sink_x_1.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_1_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_1_0_0.set_samp_rate(self.samp_rate)
 
     def get_ruido(self):
         return self.ruido
@@ -348,6 +398,12 @@ class lab4(gr.top_block, Qt.QWidget):
         self.h = h
         self.fir_filter_xxx_0.set_taps(self.h)
         self.interp_fir_filter_xxx_0.set_taps(self.h)
+
+    def get_co(self):
+        return self.co
+
+    def set_co(self, co):
+        self.co = co
 
     def get_Rb(self):
         return self.Rb
